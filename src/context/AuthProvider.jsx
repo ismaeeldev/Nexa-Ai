@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import FullScreenLoader from "@/modules/Loader/FullScreenLoader";
 import StartupLoader from "@/modules/Loader/StartUpLoader";
 import { TrendingUpIcon } from "lucide-react";
+import { nexaConfirm } from "@/components/ui/nexaConfirm";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -33,8 +34,14 @@ export const AuthProvider = ({ children }) => {
 
     // Logout handler
     const handleLogout = async () => {
-        const confirmation = window.confirm("Are you sure you want to log out?");
-        if (!confirmation) return;
+        const ok = await nexaConfirm({
+            title: "Sign out of Nexa AI?",
+            description: "You’ll need to sign in again to access your agents and meetings.",
+            confirmText: "Log out",
+            cancelText: "Stay",
+        });
+
+        if (!ok) return;
 
         setLogoutLoading(true);
         try {

@@ -12,7 +12,7 @@ const Layout = (props) => {
             {/* Main content */}
             <main className="flex-1 overflow-auto p-6">
                 <DashboardNavbar />
-                <div className="mx-auto max-w-[1200px] w-full bg-gradient-to-t from-gray-800/60 to-transparent backdrop-blur-sm rounded-2xl p-6 shadow-lg ring-1 ring-white/5">
+                <div>
                     {props.children}
                 </div>
             </main>

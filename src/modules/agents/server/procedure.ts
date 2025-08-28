@@ -8,6 +8,8 @@ const agentRouter = createTRPCRouter({
         const data = await db.select().from(agents);
         return data;
 
+        // throw new Error("Failed to fetch agents");
+
     })
 
 })

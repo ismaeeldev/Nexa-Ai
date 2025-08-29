@@ -34,7 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/auth/sign-up/page.js"
-  ],
+, "src/modules/agents/views/agentDialog.jsx", "src/modules/agents/views/agents.jsx"  ],
   "exclude": [
     "node_modules"
   ]

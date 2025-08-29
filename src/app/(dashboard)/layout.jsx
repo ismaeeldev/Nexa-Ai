@@ -12,10 +12,11 @@ const Layout = (props) => {
             {/* Main content */}
             <main className="flex-1 overflow-auto p-6">
                 <DashboardNavbar />
-                <div>
+                <div className="mt-4">
                     {props.children}
                 </div>
             </main>
+
         </SidebarProvider>
     );
 };

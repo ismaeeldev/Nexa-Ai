@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
-import { MoreHorizontal } from "lucide-react";
-
+import Image from "next/image";
+import NexaAv from '../../../../public/nexaAv.webp';
+import MoreMenu from "@/components/ui/moreMenu";
+import { Edit, Trash } from "lucide-react";
 
 type Agent = {
     id: string;
@@ -43,9 +45,7 @@ export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean
 
     // subtle gradients that match your app: pink <-> indigo accents
     const accentGradient = "linear-gradient(90deg,#F43F5E,#6366F1)";
-    const cardBg = dark
-        ? "linear-gradient(145deg,#0b1220,#071021)"
-        : "linear-gradient(145deg,#ffffff,#f7fbff)";
+    const cardBg = "linear-gradient(145deg,#0b1220,#071021)";
 
     return (
         <motion.article
@@ -54,7 +54,7 @@ export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean
             className="rounded-2xl p-5 shadow-md border overflow-hidden"
             style={{
                 background: cardBg,
-                borderColor: dark ? "rgba(255,255,255,0.03)" : "rgba(2,6,23,0.04)",
+                borderColor: "rgba(255,255,255,0.03)"
             }}
         >
             <header className="flex items-start gap-4">
@@ -62,14 +62,20 @@ export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean
                     className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
                     style={{ background: accentGradient }}
                 >
-                    {initials}
+                    <Image
+                        src={NexaAv}
+                        alt="Agent avatar"
+                        width={120}
+                        height={120}
+                        className="object-cover w-12 h-12 rounded-full"
+                        unoptimized
+                    />
                 </div>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-3">
                         <h3
-                            className={`text-sm font-semibold truncate ${dark ? "text-white" : "text-slate-900"
-                                }`}
+                            className={`text-sm font-semibold truncate  text-white`}
                         >
                             {agent.name}
                         </h3>
@@ -79,7 +85,13 @@ export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean
                             className="p-1 rounded-md hover:bg-white/5"
                             title="More actions"
                         >
-                            <MoreHorizontal className={dark ? "text-gray-300" : "text-gray-600"} />
+                            {/* <MoreHorizontal className='text-gray-300' /> */}
+                            <MoreMenu
+                                actions={[
+                                    { name: "Edit", icon: <Edit size={16} />, onClick: () => alert("Edit clicked") },
+                                    { name: "Delete", icon: <Trash size={16} />, onClick: () => alert("Delete clicked") },
+
+                                ]} />
                         </button>
                     </div>
 

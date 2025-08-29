@@ -13,6 +13,7 @@ import {
     useSidebar, // <-- added
 } from "@/components/ui/sidebar";
 import Logo from "../../../app/logo";
+import NexaLogo from '../../../../public/logo.png'
 import Link from "next/link";
 import {
     BotIcon,
@@ -28,6 +29,7 @@ import {
 import Progress from "./Progress";
 import { useAuth } from "@/context/AuthProvider";
 import { cn } from "@/lib/utils"
+import Image from "next/image";
 
 
 const firstSection = [
@@ -56,7 +58,8 @@ const DashboardSidebar = () => {
             <Sidebar className="w-64 h-full flex flex-col rounded-2xl shadow-2xl [&>div]:bg-gray-900/95 backdrop-blur-md ring-1 ring-white/10 border-none overflow-hidden  ">
                 <SidebarHeader className="border-b border-gray-700 p-5">
                     <Link href="/" className="items-center ml-12">
-                        <Logo />
+                        {/* <Logo /> */}
+                        <Image src={NexaLogo} alt="Nexa Logo" className="h-8 " unoptimized />
                     </Link>
                 </SidebarHeader>
 

@@ -6,21 +6,26 @@ import Image from "next/image";
 import { X, ImagePlus, Loader2 } from "lucide-react";
 import NexaAv from "../../../../public/nexaAv.webp";
 
-const NewAgentDialog = ({ open, setOpen, onSave }) => {
+
+const NewAgentDialog = ({ open, setOpen, onSave, initialData = null }) => {
     const [name, setName] = useState("");
     const [instructions, setInstructions] = useState("");
     const [saving, setSaving] = useState(false);
 
     const inputRef = useRef(null);
 
-    // autofocus like your Command dialog
+    // Determine mode by presence of initialData.id
+    const isEdit = Boolean(initialData && initialData.id);
+
+    // Prefill inputs whenever dialog opens or initialData changes
     useEffect(() => {
         if (!open) return;
-        const t = setTimeout(() => {
-            inputRef.current?.focus?.();
-        }, 80);
+        setName(initialData?.name ?? "");
+        setInstructions(initialData?.instructions ?? "");
+        // focus after a short delay (keeps previous behavior)
+        const t = setTimeout(() => inputRef.current?.focus?.(), 80);
         return () => clearTimeout(t);
-    }, [open]);
+    }, [open, initialData]);
 
     // keyboard: Esc to close, Cmd/Ctrl+S to save
     useEffect(() => {
@@ -37,7 +42,8 @@ const NewAgentDialog = ({ open, setOpen, onSave }) => {
         };
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
-    }, [open, name, instructions]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, name, instructions]); // handleSave is recreated each render; this matches previous behavior
 
     const canSave = useMemo(() => {
         return name.trim().length > 1 && instructions.trim().length > 3 && !saving;
@@ -55,15 +61,21 @@ const NewAgentDialog = ({ open, setOpen, onSave }) => {
 
     const handleSave = async () => {
         if (!canSave) return;
+        const payload = isEdit
+            ? { id: initialData.id, name: name.trim(), instructions: instructions.trim() }
+            : { name: name.trim(), instructions: instructions.trim() };
+
         try {
             setSaving(true);
-            await onSave({ name: name.trim(), instructions: instructions.trim() });
+            await onSave(payload); // caller decides create or update
             setSaving(false);
             setOpen(false);
+
+            // keep behavior same as create: reset fields after saved
             reset();
         } catch (err) {
             setSaving(false);
-            console.error(err);
+            console.error("Save failed:", err);
         }
     };
 
@@ -85,8 +97,7 @@ const NewAgentDialog = ({ open, setOpen, onSave }) => {
                     style={{
                         background:
                             "linear-gradient(180deg, rgba(7,11,19,0.95) 0%, rgba(10,14,22,0.88) 100%)",
-                        boxShadow:
-                            "0 20px 60px rgba(2,6,23,0.6), 0 0 40px rgba(244,63,94,0.04)",
+                        boxShadow: "0 20px 60px rgba(2,6,23,0.6), 0 0 40px rgba(244,63,94,0.04)",
                         transformOrigin: "center center",
                         animation: "nexaDialogIn 180ms cubic-bezier(.22,1,.36,1)",
                     }}
@@ -127,10 +138,10 @@ const NewAgentDialog = ({ open, setOpen, onSave }) => {
 
                         <div>
                             <div id="new-agent-title" className="text-sm font-semibold text-gray-100">
-                                New Agent
+                                {isEdit ? "Edit Agent" : "New Agent"}
                             </div>
                             <div className="text-xs text-gray-400">
-                                Create a new agent with name, instructions, and an avatar
+                                {isEdit ? "Update agent details" : "Create a new agent with name and instructions"}
                             </div>
                         </div>
                     </div>
@@ -141,7 +152,7 @@ const NewAgentDialog = ({ open, setOpen, onSave }) => {
                         <div className="flex items-start md:items-center gap-4 md:gap-5">
                             <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center">
                                 <Image
-                                    src={NexaAv}
+                                    src={initialData?.avatar ?? NexaAv}
                                     alt="Agent avatar"
                                     width={160}
                                     height={160}
@@ -197,7 +208,7 @@ const NewAgentDialog = ({ open, setOpen, onSave }) => {
                                 }}
                             >
                                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                                Save (⌘/Ctrl+S)
+                                {isEdit ? "Update" : "Save"} {isEdit ? "" : "(⌘/Ctrl+S)"}
                             </button>
                         </div>
                     </div>

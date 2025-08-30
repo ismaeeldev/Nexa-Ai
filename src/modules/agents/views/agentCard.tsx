@@ -1,8 +1,17 @@
+"use client"
+
 import { motion } from "framer-motion";
 import Image from "next/image";
 import NexaAv from '../../../../public/nexaAv.webp';
 import MoreMenu from "@/components/ui/moreMenu";
 import { Edit, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useTRPC } from "@/trpc/client";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import NewAgentDialog from "./agentDialog";
+import { nexaConfirm } from "@/components/ui/nexaConfirm";
 
 type Agent = {
     id: string;
@@ -37,87 +46,139 @@ function truncate(text = "", length = 140) {
 
 
 export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean }) {
-    const initials = agent.name
-        .split(" ")
-        .map((s) => s[0])
-        .slice(0, 2)
-        .join("");
+    const trpc = useTRPC();
+    const [editOpen, setEditOpen] = useState(false);
+    const queryClient = useQueryClient();
 
-    // subtle gradients that match your app: pink <-> indigo accents
+
+    const updateAgent = useMutation(trpc.agents.update.mutationOptions({
+        onSuccess: () => {
+            toast.success("Agent Updated successfully!");
+            queryClient.invalidateQueries({ queryKey: trpc.agents.getMany.queryKey() });
+            queryClient.invalidateQueries({
+                queryKey: trpc.agents.getOne.queryKey({ id: agent.id }),
+            });
+        },
+        onError: (error) => {
+            toast.error(`Error updating agent: ${error.message}`);
+        }
+    }));
+
+
+    const deleteAgent = useMutation(trpc.agents.delete.mutationOptions({
+        onSuccess: () => {
+            toast.success("Agent Deleted successfully!");
+            queryClient.invalidateQueries({ queryKey: trpc.agents.getMany.queryKey() });
+        },
+        onError: (error) => {
+            toast.error(`Error deleting agent: ${error.message}`);
+        }
+    }));
+
+    const handleUpdate = async ({ id, name, instructions }: { id: string; name: string; instructions: string }) => {
+        await updateAgent.mutateAsync({ id, name, instructions });
+    };
+
+    const handleDelete = async () => {
+        const ok = await nexaConfirm({
+            title: "Delete Agent?",
+            description: "This action cannot be undone. Are you sure you want to permanently delete this agent?",
+            confirmText: "Delete",
+            cancelText: "Cancel",
+        });
+
+
+        if (!ok) return;
+
+        await deleteAgent.mutateAsync({ id: agent.id });
+    };
+
+    const handleEdit = () => {
+        setEditOpen(true);
+    };
+
     const accentGradient = "linear-gradient(90deg,#F43F5E,#6366F1)";
     const cardBg = "linear-gradient(145deg,#0b1220,#071021)";
 
     return (
-        <motion.article
-            layout
-            whileHover={{ y: -6 }}
-            className="rounded-2xl p-5 shadow-md border overflow-hidden"
-            style={{
-                background: cardBg,
-                borderColor: "rgba(255,255,255,0.03)"
-            }}
-        >
-            <header className="flex items-start gap-4">
-                <div
-                    className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
-                    style={{ background: accentGradient }}
-                >
-                    <Image
-                        src={NexaAv}
-                        alt="Agent avatar"
-                        width={120}
-                        height={120}
-                        className="object-cover w-12 h-12 rounded-full"
-                        unoptimized
-                    />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-3">
-                        <h3
-                            className={`text-sm font-semibold truncate  text-white`}
-                        >
-                            {agent.name}
-                        </h3>
-
-                        <button
-                            aria-label="more"
-                            className="p-1 rounded-md hover:bg-white/5"
-                            title="More actions"
-                        >
-                            {/* <MoreHorizontal className='text-gray-300' /> */}
-                            <MoreMenu
-                                actions={[
-                                    { name: "Edit", icon: <Edit size={16} />, onClick: () => alert("Edit clicked") },
-                                    { name: "Delete", icon: <Trash size={16} />, onClick: () => alert("Delete clicked") },
-
-                                ]} />
-                        </button>
+        <>
+            <motion.article
+                layout
+                whileHover={{ y: -6 }}
+                className="rounded-2xl p-5 shadow-md border overflow-hidden"
+                style={{
+                    background: cardBg,
+                    borderColor: "rgba(255,255,255,0.03)"
+                }}
+            >
+                <header className="flex items-start gap-4">
+                    <div
+                        className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
+                        style={{ background: accentGradient }}
+                    >
+                        <Image
+                            src={NexaAv}
+                            alt="Agent avatar"
+                            width={120}
+                            height={120}
+                            className="object-cover w-12 h-12 rounded-full"
+                            unoptimized
+                        />
                     </div>
 
-                    <div className="mt-1 text-xs text-gray-400 flex items-center gap-2">
-                        <span className="leading-none">Created</span>
-                        <span className="font-medium leading-none">{timeAgo(agent.createdAt)}</span>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-3">
+                            <h3
+                                className={`text-sm font-semibold truncate  text-white`}
+                            >
+                                {agent.name}
+                            </h3>
+
+                            <Button
+                                aria-label="more"
+                                className="p-1 rounded-md bg-gray/20 hover:bg-white/5"
+                                title="More actions"
+                            >
+                                {/* <MoreHorizontal className='text-gray-300' /> */}
+                                <MoreMenu
+                                    actions={[
+                                        { name: "Edit", icon: <Edit size={16} />, onClick: handleEdit },
+                                        { name: "Delete", icon: <Trash size={16} />, onClick: handleDelete },
+
+                                    ]} />
+                            </Button>
+                        </div>
+
+                        <div className="mt-1 text-xs text-gray-400 flex items-center gap-2">
+                            <span className="leading-none">Created</span>
+                            <span className="font-medium leading-none">{timeAgo(agent.createdAt)}</span>
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <div className="mt-4 text-sm text-gray-300" style={{ minHeight: 64 }}>
-                {truncate(agent.instructions, 180)}
-            </div>
-
-            <footer className="mt-4 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 rounded-md text-[11px] font-medium" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(2,6,23,0.02)" }}>
-                        {agent.id.slice(0, 6)}
-                    </span>
-                    <span className="text-gray-400">Updated {timeAgo(agent.updatedAt)}</span>
+                <div className="mt-4 text-sm text-gray-300" style={{ minHeight: 64 }}>
+                    {truncate(agent.instructions, 180)}
                 </div>
 
-                <div className="text-gray-400 text-right">
-                    <button className="text-sm px-3 py-1 rounded-md hover:underline">Open</button>
-                </div>
-            </footer>
-        </motion.article>
+                <footer className="mt-4 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 rounded-md text-[11px] font-medium" style={{ background: dark ? "rgba(255,255,255,0.02)" : "rgba(2,6,23,0.02)" }}>
+                            {agent.id.slice(0, 6)}
+                        </span>
+                        <span className="text-gray-400">Updated {timeAgo(agent.updatedAt)}</span>
+                    </div>
+
+                    <div className="text-gray-400 text-right">
+                        <button className="text-sm px-3 py-1 rounded-md hover:underline">Open</button>
+                    </div>
+                </footer>
+            </motion.article>
+            <NewAgentDialog
+                open={editOpen}
+                setOpen={setEditOpen}
+                initialData={agent}      // <--- pass the existing agent
+                onSave={handleUpdate}
+            />
+        </>
     );
 }

@@ -8,13 +8,13 @@ import { eq } from "drizzle-orm";
 
 const agentRouter = createTRPCRouter({
 
-    getMany: baseProcedure.query(async () => {
+    getMany: protectedProcedure.query(async () => {
         const data = await db.select().from(agents);
         return data;
 
     }),
 
-    getOne: baseProcedure
+    getOne: protectedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ input }) => {
             const [existingAgent] = await db
@@ -38,6 +38,40 @@ const agentRouter = createTRPCRouter({
 
             return createdAgent;
         }),
+
+
+    update: protectedProcedure
+        .input(
+            AgentSchema.extend({
+                id: z.string(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { id, ...updates } = input;
+
+            const [updatedAgent] = await db
+                .update(agents)
+                .set({
+                    ...updates,
+                    userId: ctx.auth.user.id,
+                })
+                .where(eq(agents.id, id))
+                .returning();
+
+            return updatedAgent ?? null;
+        }),
+
+        delete: protectedProcedure
+            .input(z.object({ id: z.string() }))
+            .mutation(async ({ input }) => {
+                const [deletedAgent] = await db
+                    .delete(agents)
+                    .where(eq(agents.id, input.id))
+                    .returning();
+
+                return deletedAgent ?? null;
+            })
+
 
 })
 

@@ -20,17 +20,25 @@ export const AuthProvider = ({ children }) => {
         const fetchSession = async () => {
             try {
                 const { data: session } = await authClient.getSession();
-                setUser(session?.user || null);
+                if (session?.user) {
+                    setUser(session.user);
+                    router.push("/");
+                } else {
+                    setUser(null);
+                    router.push("/sign-in");
+                }
             } catch (err) {
                 console.error("Auth session error:", err);
                 setUser(null);
+                router.push("/sign-in");
             } finally {
                 setAuthLoading(false);
+
             }
         };
 
         fetchSession();
-    }, []);
+    }, [router]);
 
     // Logout handler
     const handleLogout = async () => {
@@ -57,7 +65,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ user, setUser, authLoading, handleLogout }}>
-            {/* Initial auth loading */}
+
             {authLoading ? (
                 <StartupLoader />
             ) : (

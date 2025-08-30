@@ -6,12 +6,20 @@ import { Suspense } from 'react'
 import { AgentLoading } from '@/modules/agents/views/agents'
 import { ErrorBoundary } from "react-error-boundary";
 import { AgentError } from '@/modules/agents/views/agents'
+import { redirect } from "next/navigation";
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers'
 
 
 const page = async () => {
-
+    const session = await auth.api.getSession({ headers: await headers(), })
     const queryClient = getQueryClient();
     void queryClient.prefetchQuery(trpc.agents.getMany.queryOptions());
+
+
+    if (!session) {
+        redirect('/sign-in')
+    }
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>

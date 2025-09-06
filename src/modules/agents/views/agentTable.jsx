@@ -6,6 +6,9 @@ import Image from "next/image";
 import { Pencil, Trash2 } from "lucide-react";
 import NexaAv from "../../../../public/nexaAv.webp";
 import NewAgentDialog from "./agentDialog";
+import EmptyState from "../../Error/emptyState";
+import ViewAgentDialog from "./viewDialog";
+
 
 // Constants for better maintainability
 const TABLE_STYLES = {
@@ -35,11 +38,11 @@ const PageButton = ({ disabled, onClick, children }) => (
 );
 
 // Agent row component for better organization
-const AgentRow = ({ agent, onEdit, onDelete }) => (
+const AgentRow = ({ agent, onEdit, onDelete, handleView }) => (
     <tr key={agent.id} className="border-b border-white/5 hover:bg-white/[0.06]">
-        <td className="px-4 py-3">
+        <td className="px-6 py-4 align-middle">
             <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-md overflow-hidden bg-white/5 border border-white/10">
+                <div onClick={() => handleView(agent)} className="cursor-pointer w-9 h-9 rounded-md overflow-hidden bg-white/5 border border-white/10 shrink-0">
                     <Image
                         src={NexaAv}
                         alt={agent.name}
@@ -50,16 +53,21 @@ const AgentRow = ({ agent, onEdit, onDelete }) => (
                     />
                 </div>
                 <div className="min-w-0">
-                    <div className="font-medium truncate">{agent.name}</div>
-                    <div className="text-xs text-gray-400">ID: {agent.id.slice(0, 8)}…</div>
+                    <div className="font-medium truncate text-gray-100 ">{agent.name.split(" ").slice(0, 2).join(" ")}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">ID: {agent.id.slice(0, 8)}…</div>
                 </div>
             </div>
         </td>
-        <td className="px-4 py-3">
-            <div className="text-gray-300 truncate max-w-[540px]">{agent.instructions}</div>
+        <td className="px-6 py-4 align-middle">
+            <div className="text-gray-300 line-clamp-2 max-w-[540px] text-center" title={agent.instructions}>
+                {agent.instructions}
+            </div>
         </td>
-        <td className="px-4 py-3">
-            <div className="flex items-center gap-2">
+        <td className="px-6 py-4 text-center align-middle">
+            <div className="text-gray-300 font-medium">{agent.meetingCount}</div>
+        </td>
+        <td className="px-6 py-4 align-middle">
+            <div className="flex items-center gap-2 justify-end">
                 <button
                     onClick={() => onEdit(agent)}
                     className={BUTTON_STYLES.actionButton}
@@ -76,6 +84,14 @@ const AgentRow = ({ agent, onEdit, onDelete }) => (
                     <Trash2 className="w-4 h-4" />
                     Delete
                 </button>
+                {/* <button
+                    onClick={() => handleView(agent)}
+                    className={BUTTON_STYLES.actionButton}
+                    title="View Details"
+                >
+                    <Trash2 className="w-4 h-4" />
+                    View
+                </button> */}
             </div>
         </td>
     </tr>
@@ -91,15 +107,15 @@ const PaginationControls = ({
     onPageChange,
     onRowsChange
 }) => (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4">
         <div className="text-xs text-gray-400">
-            Showing <span className="text-gray-200">{sliceLength}</span> of{" "}
-            <span className="text-gray-200">{totalLength}</span>
+            Showing <span className="text-gray-200 font-medium">{sliceLength}</span> of{" "}
+            <span className="text-gray-200 font-medium">{totalLength}</span> agents
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-xs text-gray-300">
-                Rows
+                Rows per page
                 <select
                     className={BUTTON_STYLES.selectButton}
                     value={rows}
@@ -121,11 +137,11 @@ const PaginationControls = ({
                     disabled={current === 0}
                     onClick={() => onPageChange(Math.max(0, current - 1))}
                 >
-                    Prev
+                    Previous
                 </PageButton>
-                <div className="text-xs text-gray-300">
-                    Page <span className="text-gray-100">{current + 1}</span> /{" "}
-                    <span className="text-gray-100">{pageCount}</span>
+                <div className="text-xs text-gray-300 mx-2">
+                    Page <span className="text-gray-100 font-medium">{current + 1}</span> of{" "}
+                    <span className="text-gray-100 font-medium">{pageCount}</span>
                 </div>
                 <PageButton
                     disabled={current >= pageCount - 1}
@@ -149,6 +165,9 @@ export default function AgentTable({
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(pageSize);
     const [initialEditAgent, setEditAgent] = useState(null);
+    const [viewDialogOpen, setViewDialogOpen] = useState(false);
+    const [viewAgent, setViewAgent] = useState(null);
+
 
     const pageCount = Math.max(1, Math.ceil(agents.length / rows));
     const current = Math.min(page, pageCount - 1);
@@ -164,63 +183,85 @@ export default function AgentTable({
         setEditAgent(agent);
     };
 
+    const handleViewAgent = (agent) => {
+        console.log("Viewing agent:", agent);
+        setViewAgent(agent);
+        setViewDialogOpen(true);
+    }
+
     const handlePageChange = (newPage) => setPage(newPage);
     const handleRowsChange = (newRows) => setRows(newRows);
 
+
     return (
         <>
-            <div
-                className="rounded-xl overflow-hidden border border-white/5"
-                style={TABLE_STYLES.container}
-            >
-                {/* Top accent */}
-                <div
-                    className="h-1 w-full"
-                    style={{ background: TABLE_STYLES.accentGradient }}
-                />
+            {(
+                agents.length === 0
+            ) ? (
+                <EmptyState title="agents" />
+            ) :
+                (<div
+                    className="rounded-xl overflow-hidden border border-white/5"
+                    style={TABLE_STYLES.container}
+                >
+                    {/* Top accent */}
+                    <div
+                        className="h-1 w-full"
+                        style={{ background: TABLE_STYLES.accentGradient }}
+                    />
 
-                {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead className="text-left text-gray-300">
-                            <tr className="border-b border-white/5">
-                                <th className="px-4 py-3 font-medium">Agent</th>
-                                <th className="px-4 py-3 font-medium">Instructions</th>
-                                <th className="px-4 py-3 font-medium w-32">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-gray-100">
-                            {slice.map((agent) => (
-                                <AgentRow
-                                    key={agent.id}
-                                    agent={agent}
-                                    onEdit={handleEdit}
-                                    onDelete={onDelete}
-                                />
-                            ))}
-
-                            {slice.length === 0 && (
-                                <tr>
-                                    <td colSpan={3} className="px-4 py-10 text-center text-gray-400">
-                                        No agents to display.
-                                    </td>
+                    {/* Table */}
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="text-left text-gray-300 ">
+                                <tr className="border-b border-white/5 ">
+                                    <th className="px-26 py-4  font-medium">Agent</th>
+                                    <th className="px-6 py-4 font-medium text-center">Instructions</th>
+                                    <th className="px-6 py-4 font-medium text-center">Meetings</th>
+                                    <th className="px-6 py-4 font-medium text-center w-48">Actions</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="">
+                                {slice.map((agent) => (
+                                    <AgentRow
+                                        key={agent.id}
+                                        agent={agent}
+                                        onEdit={handleEdit}
+                                        onDelete={onDelete}
+                                        handleView={handleViewAgent}
+                                    />
+                                ))}
 
-                {/* Pagination */}
-                <PaginationControls
-                    current={current}
-                    pageCount={pageCount}
-                    rows={rows}
-                    sliceLength={slice.length}
-                    totalLength={agents.length}
-                    onPageChange={handlePageChange}
-                    onRowsChange={handleRowsChange}
-                />
-            </div>
+                                {slice.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-10 text-center text-gray-400">
+                                            No agents found. Create your first agent to get started.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    <PaginationControls
+                        current={current}
+                        pageCount={pageCount}
+                        rows={rows}
+                        sliceLength={slice.length}
+                        totalLength={agents.length}
+                        onPageChange={handlePageChange}
+                        onRowsChange={handleRowsChange}
+                    />
+                </div>)}
+
+            <ViewAgentDialog
+                open={viewDialogOpen}
+                setOpen={setViewDialogOpen}
+                agent={viewAgent}
+                onEdit={handleEdit}
+                onDelete={onDelete}
+            />
 
             <NewAgentDialog
                 open={open}

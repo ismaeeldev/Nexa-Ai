@@ -34,7 +34,7 @@ const VALIDATION = {
 const useKeyboardShortcuts = (open, onClose, onSave) => {
     useEffect(() => {
         if (!open) return;
-        
+
         const handleKeyDown = (e) => {
             if (e.key === "Escape") {
                 e.preventDefault();
@@ -45,7 +45,7 @@ const useKeyboardShortcuts = (open, onClose, onSave) => {
                 onSave();
             }
         };
-        
+
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [open, onClose, onSave]);
@@ -130,6 +130,7 @@ const FormInputs = ({ name, setName, instructions, setInstructions, inputRef }) 
     </>
 );
 
+
 // Dialog footer component
 const DialogFooter = ({ isEdit, canSave, saving, onClose, onSave }) => (
     <div className="mt-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
@@ -176,9 +177,9 @@ const NewAgentDialog = ({ open, setOpen, onSave, initialData = null }) => {
     }, [open, initialData]);
 
     const canSave = useMemo(() => {
-        return name.trim().length > VALIDATION.minNameLength && 
-               instructions.trim().length > VALIDATION.minInstructionsLength && 
-               !saving;
+        return name.trim().length > VALIDATION.minNameLength &&
+            instructions.trim().length > VALIDATION.minInstructionsLength &&
+            !saving;
     }, [name, instructions, saving]);
 
     const reset = () => {

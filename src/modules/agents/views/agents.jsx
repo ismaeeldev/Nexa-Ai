@@ -12,6 +12,8 @@ import AgentTable from "./agentTable";
 import NewAgentDialog from "./agentDialog";
 import { toast } from "sonner";
 import { nexaConfirm } from "@/components/ui/nexaConfirm";
+import EmptyState from "../../Error/emptyState";
+
 
 // Constants for better maintainability
 const VIEW_MODES = {
@@ -118,22 +120,20 @@ const SearchHeader = ({ query, setQuery, viewMode, setViewMode, onCreateNew }) =
             <div className="flex items-center rounded-lg border border-white/10 overflow-hidden">
                 <button
                     onClick={() => setViewMode(VIEW_MODES.CARD)}
-                    className={`${BUTTON_STYLES.viewToggle} ${
-                        viewMode === VIEW_MODES.CARD 
-                            ? BUTTON_STYLES.viewToggleActive 
-                            : BUTTON_STYLES.viewToggleInactive
-                    }`}
+                    className={`${BUTTON_STYLES.viewToggle} ${viewMode === VIEW_MODES.CARD
+                        ? BUTTON_STYLES.viewToggleActive
+                        : BUTTON_STYLES.viewToggleInactive
+                        }`}
                     title="Card view"
                 >
                     <LayoutGrid className="w-4 h-4" />
                 </button>
                 <button
                     onClick={() => setViewMode(VIEW_MODES.TABLE)}
-                    className={`${BUTTON_STYLES.viewToggle} border-l border-white/10 ${
-                        viewMode === VIEW_MODES.TABLE 
-                            ? BUTTON_STYLES.viewToggleActive 
-                            : BUTTON_STYLES.viewToggleInactive
-                    }`}
+                    className={`${BUTTON_STYLES.viewToggle} border-l border-white/10 ${viewMode === VIEW_MODES.TABLE
+                        ? BUTTON_STYLES.viewToggleActive
+                        : BUTTON_STYLES.viewToggleInactive
+                        }`}
                     title="Table view"
                 >
                     <Rows3 className="w-4 h-4" />
@@ -162,7 +162,7 @@ const CardView = ({ agents }) => (
         </div>
         {agents.length === 0 && (
             <div className="mt-10 text-center text-gray-400">
-                No agents found. Try creating a new one.
+                <EmptyState title="agents" />
             </div>
         )}
     </>
@@ -174,7 +174,7 @@ export default function Agents() {
     const [openDialog, setOpenDialog] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [viewMode, setViewMode] = useViewMode();
-    
+
     const { data } = useSuspenseQuery(trpc.agents.getMany.queryOptions());
     const { createAgent, updateAgent, deleteAgent } = useAgentMutations();
 
@@ -222,7 +222,7 @@ export default function Agents() {
                     setViewMode={setViewMode}
                     onCreateNew={() => setOpenDialog(true)}
                 />
-                
+
                 {/* Update the description with actual data */}
                 <div className="mb-6">
                     <p className="text-sm text-gray-400 mt-1">
@@ -245,10 +245,10 @@ export default function Agents() {
                 )}
             </section>
 
-            <NewAgentDialog 
-                open={openDialog} 
-                setOpen={setOpenDialog} 
-                onSave={handleSave} 
+            <NewAgentDialog
+                open={openDialog}
+                setOpen={setOpenDialog}
+                onSave={handleSave}
             />
         </>
     );

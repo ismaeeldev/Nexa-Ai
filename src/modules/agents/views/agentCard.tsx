@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import NexaAv from '../../../../public/nexaAv.webp';
 import MoreMenu from "@/components/ui/moreMenu";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Video, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTRPC } from "@/trpc/client";
@@ -12,6 +12,8 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import NewAgentDialog from "./agentDialog";
 import { nexaConfirm } from "@/components/ui/nexaConfirm";
+import { Badge } from "@/components/ui/badge";
+import ViewAgentDialog from "./viewDialog";
 
 // Types
 type Agent = {
@@ -19,8 +21,8 @@ type Agent = {
     name: string;
     userId: string;
     instructions: string;
-    createdAt: string; // ISO
-    updatedAt: string; // ISO
+    createdAt: string;
+    updatedAt: string;
 };
 
 // Constants for better maintainability
@@ -28,10 +30,10 @@ const CARD_STYLES = {
     accentGradient: "linear-gradient(90deg,#F43F5E,#6366F1)",
     cardBg: "linear-gradient(145deg,#0b1220,#071021)",
     borderColor: "rgba(255,255,255,0.03)",
-    buttonBg: "bg-gray/20 hover:bg-white/5",
+    buttonBg: "bg-gray/90 hover:bg-white/5",
 };
 
-const TRUNCATE_LENGTH = 180;
+const TRUNCATE_LENGTH = 120;
 
 // Utility functions
 const timeAgo = (iso?: string): string => {
@@ -53,7 +55,6 @@ const truncate = (text = "", length = 140): string => {
     if (text.length <= length) return text;
     return text.slice(0, length).trimEnd() + "…";
 };
-
 
 // Custom hook for agent mutations
 const useAgentMutations = (agent: Agent) => {
@@ -87,49 +88,52 @@ const useAgentMutations = (agent: Agent) => {
 };
 
 // Card header component
-const CardHeader = ({ agent, onEdit, onDelete }: {
+const CardHeader = ({ agent, onEdit, onDelete, onView }: {
     agent: Agent;
     onEdit: () => void;
     onDelete: () => void;
+    onView: () => void;
 }) => (
-    <header className="flex items-start gap-4">
+    <header className="flex items-center gap-3">
+        {/* Avatar */}
         <div
-            className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold"
+            className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden"
             style={{ background: CARD_STYLES.accentGradient }}
         >
             <Image
                 src={NexaAv}
                 alt="Agent avatar"
-                width={120}
-                height={120}
+                width={48}
+                height={48}
                 className="object-cover w-12 h-12 rounded-full"
                 unoptimized
             />
         </div>
 
+        {/* Name + Created + Actions */}
         <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold truncate text-white">
-                    {agent.name}
-                </h3>
+            <div className="flex items-center justify-between">
+                {/* Name + Created */}
+                <div className="min-w-0">
+                    <h3 className="text-sm font-semibold truncate text-white">
+                        {agent.name.split(" ").slice(0, 2).join(" ")}
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                        Created <span className="font-medium">{timeAgo(agent.createdAt)}</span>
+                    </p>
+                </div>
 
-                <Button
-                    aria-label="more"
-                    className={`p-1 rounded-md ${CARD_STYLES.buttonBg}`}
-                    title="More actions"
-                >
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                    {/* <Eye className="hover:text-blue-500 cursor-pointer size-5" onClick={onView} /> */}
                     <MoreMenu
                         actions={[
-                            { name: "Edit", icon: <Edit size={16} />, onClick: onEdit },
-                            { name: "Delete", icon: <Trash size={16} />, onClick: onDelete },
+                            { name: "Edit", icon: <Edit size={16} className="hover:text-green-500 cursor-pointer" />, onClick: onEdit },
+                            { name: "Delete", icon: <Trash size={16} className="hover:text-red-500 cursor-pointer" />, onClick: onDelete },
+                            { name: "View", icon: <Eye size={16} className="hover:text-blue-500 cursor-pointer" />, onClick: onView },
                         ]}
                     />
-                </Button>
-            </div>
-
-            <div className="mt-1 text-xs text-gray-400 flex items-center gap-2">
-                <span className="leading-none">Created</span>
-                <span className="font-medium leading-none">{timeAgo(agent.createdAt)}</span>
+                </div>
             </div>
         </div>
     </header>
@@ -150,8 +154,11 @@ const CardFooter = ({ agent, dark }: { agent: Agent; dark: boolean }) => (
             <span className="text-gray-400">Updated {timeAgo(agent.updatedAt)}</span>
         </div>
 
-        <div className="text-gray-400 text-right">
-            <button className="text-sm px-3 py-1 rounded-md hover:underline">Open</button>
+        <div className="text-gray-400 text-right flex items-center gap-1">
+            <Badge>
+
+                <Video /> <span className="text-1xl">{agent.meetingCount}</span>
+            </Badge>
         </div>
     </footer>
 );
@@ -159,6 +166,7 @@ const CardFooter = ({ agent, dark }: { agent: Agent; dark: boolean }) => (
 export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean }) {
     const [editOpen, setEditOpen] = useState(false);
     const { updateAgent, deleteAgent } = useAgentMutations(agent);
+    const [viewDialogOpen, setViewDialogOpen] = useState(false);
 
     const handleUpdate = async ({ id, name, instructions }: {
         id: string;
@@ -184,6 +192,10 @@ export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean
         setEditOpen(true);
     };
 
+    const handleView = () => {
+        setViewDialogOpen(true);
+    }
+
     return (
         <>
             <motion.article
@@ -195,10 +207,12 @@ export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean
                     borderColor: CARD_STYLES.borderColor
                 }}
             >
+
                 <CardHeader
                     agent={agent}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onView={handleView}
                 />
 
                 <div className="mt-4 text-sm text-gray-300" style={{ minHeight: 64 }}>
@@ -207,6 +221,14 @@ export default function AgentCard({ agent, dark }: { agent: Agent; dark: boolean
 
                 <CardFooter agent={agent} dark={dark} />
             </motion.article>
+
+            <ViewAgentDialog
+                open={viewDialogOpen}
+                setOpen={setViewDialogOpen}
+                agent={agent}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+            />
 
             <NewAgentDialog
                 open={editOpen}

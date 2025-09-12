@@ -190,7 +190,7 @@ export default function MeetingTable({ meetings = [], pageSize = 9, onEdit = () 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="text-left text-gray-300 ">
-                                <tr className="border-b border-white/5 ">
+                                <tr className="border-b border-white/5 text-center ">
                                     <th className="px-6 py-4 font-medium">Meeting</th>
                                     <th className="px-6 py-4 font-medium">Agent</th>
                                     <th className="px-6 py-4 font-medium">Status</th>

@@ -1,4 +1,4 @@
-import { createTRPCRouter, baseProcedure, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { db } from "@/db";
 import { meetings } from "@/db/schema";
 import { agents } from "@/db/schema"
@@ -25,7 +25,6 @@ const meetingRouter = createTRPCRouter({
             .from(meetings)
             .leftJoin(agents, eq(meetings.agentId, agents.id))
             .where(eq(meetings.userId, ctx.auth.user.id));
-
 
         return data.map((row) => ({
             ...row.meeting,
@@ -55,6 +54,67 @@ const meetingRouter = createTRPCRouter({
             return existingMeeting ?? null;
         }),
 
-})
+    create: protectedProcedure
+        .input(MeetingSchema)
+        .mutation(async ({ input, ctx }) => {
+            const [createdMeeting] = await db
+                .insert(meetings)
+                .values({
+                    ...input,
+                    userId: ctx.auth.user.id,
+                })
+                .returning();
+
+            return createdMeeting;
+        }),
+
+    update: protectedProcedure
+        .input(MeetingSchema)
+        .mutation(async ({ input, ctx }) => {
+            const { id, ...updates } = input;
+
+            const [updatedMeeting] = await db
+                .update(meetings)
+                .set({
+                    ...updates,
+                    userId: ctx.auth.user.id,
+                    updatedAt: new Date(),
+                })
+                .where(
+                    and(
+                        eq(meetings.id, id),
+                        eq(meetings.userId, ctx.auth.user.id)
+                    )
+                )
+                .returning();
+
+            if (!updatedMeeting) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found or not authorized" });
+            }
+
+            return updatedMeeting;
+        }),
+
+    delete: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .mutation(async ({ input, ctx }) => {
+            const [deletedMeeting] = await db
+                .delete(meetings)
+                .where(
+                    and(
+                        eq(meetings.id, input.id),
+                        eq(meetings.userId, ctx.auth.user.id)
+                    )
+                )
+                .returning();
+
+            if (!deletedMeeting) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found or not authorized" });
+            }
+
+            return deletedMeeting;
+        }),
+
+});
 
 export default meetingRouter;

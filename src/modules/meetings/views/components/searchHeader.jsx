@@ -1,6 +1,8 @@
 import { Search, LayoutGrid, Rows3 } from "lucide-react";
 
 const BUTTON_STYLES = {
+    newButton: "px-4 py-2 rounded-lg font-medium shadow-sm text-white",
+    newButtonGradient: "linear-gradient(90deg,#6366F1,#F43F5E)",
     viewToggle: "px-3 py-2 text-sm flex items-center gap-2",
     viewToggleActive: "bg-white/10 text-white",
     viewToggleInactive: "text-gray-300 hover:bg-white/5",
@@ -8,7 +10,7 @@ const BUTTON_STYLES = {
 
 const VIEW_MODES = { CARD: "card", TABLE: "table" };
 
-export default function SearchHeader({ query, setQuery, viewMode, setViewMode }) {
+export default function SearchHeader({ query, setQuery, viewMode, setViewMode, onCreateNew }) {
     return (
         <div className="mb-6 flex items-center justify-between gap-4">
             <div>
@@ -44,6 +46,14 @@ export default function SearchHeader({ query, setQuery, viewMode, setViewMode })
                         <Rows3 className="w-4 h-4" />
                     </button>
                 </div>
+
+                <button
+                    className={BUTTON_STYLES.newButton}
+                    style={{ background: BUTTON_STYLES.newButtonGradient }}
+                    onClick={onCreateNew}
+                >
+                    New
+                </button>
             </div>
         </div>
     );

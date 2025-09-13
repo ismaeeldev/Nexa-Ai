@@ -21,6 +21,7 @@ const meetingRouter = createTRPCRouter({
                     id: agents.id,
                     name: agents.name,
                 },
+                duration: sql<number>`EXTRACT(EPOCH FROM (${meetings.endedAt} - ${meetings.startedAt}))`.as("duration"),
             })
             .from(meetings)
             .leftJoin(agents, eq(meetings.agentId, agents.id))

@@ -11,7 +11,6 @@ import { toast } from "sonner";
 const ACCENT_GRADIENT = "linear-gradient(90deg,#F43F5E,#6366F1)";
 const PANEL_BG = "#07121a";
 
-/* helpers */
 const shortId = (id = "") => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id || "-");
 const formatDateTime = (iso) => {
     if (!iso) return "-";
@@ -21,6 +20,7 @@ const formatDateTime = (iso) => {
         return String(iso);
     }
 };
+
 const durationText = (startIso, endIso) => {
     if (!startIso) return "-";
     const s = new Date(startIso).getTime();
@@ -32,6 +32,7 @@ const durationText = (startIso, endIso) => {
     const rem = mins % 60;
     return rem ? `${hrs}h ${rem}m` : `${hrs}h`;
 };
+
 const statusBadgeClass = (status) => {
     switch (status) {
         case "upcoming":
@@ -49,19 +50,11 @@ const statusBadgeClass = (status) => {
     }
 };
 
-/**
- * MeetingDrawer
- * Props:
- *  - open: boolean
- *  - meeting: object (meeting) | null
- *  - onClose: () => void
- *  - onEdit: (meeting) => void
- *  - onDelete: async (id) => void
- */
+
 export default function MeetingDrawer({ open, meeting, onClose, onEdit, onDelete }) {
+    const agentName = meeting?.agent?.name || meeting.agentName || meeting.agentId || "Unknown";
     const closeRef = useRef(null);
 
-    // focus close button on open and handle Escape
     useEffect(() => {
         if (open) {
             setTimeout(() => closeRef.current?.focus?.(), 80);
@@ -80,9 +73,8 @@ export default function MeetingDrawer({ open, meeting, onClose, onEdit, onDelete
     // short-circuit render
     if (!open || !meeting) return null;
 
-    const agentName = meeting?.agent?.name || meeting.agentName || meeting.agentId || "Unknown";
 
-    // copy helpers
+
     const copyToClipboard = async (text, label = "Copied") => {
         try {
             await navigator.clipboard.writeText(text || "");
@@ -130,7 +122,6 @@ export default function MeetingDrawer({ open, meeting, onClose, onEdit, onDelete
     };
 
     const handleDeleteClick = async () => {
-
         try {
             await onDelete(meeting.id);
         } catch (err) {

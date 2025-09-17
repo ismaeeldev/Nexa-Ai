@@ -11,7 +11,6 @@ const Layout = async (props) => {
 
             <DashboardSidebar />
 
-
             {/* Main content */}
             <main className="flex-1 overflow-auto p-6">
                 <DashboardNavbar />

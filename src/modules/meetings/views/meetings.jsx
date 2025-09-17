@@ -17,6 +17,9 @@ import MeetingTable from "./components/MeetingTable";
 import SearchHeader from "./components/searchHeader";
 import MeetingDialog from "./components/MeetingDialog";
 import MeetingDrawer from "./components/MeetingDrawer";
+import StateDrawer from "./components/StateDrawer"
+import { useRouter } from "next/navigation";
+
 
 
 /* simplified persisted view hook */
@@ -50,6 +53,7 @@ export default function Meetings() {
     const [editingMeeting, setEditingMeeting] = useState(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [viewMeeting, setViewMeeting] = useState(null);
+    const router = useRouter();
 
     // fetch data (suspense)
     const { data: meetings } = useSuspenseQuery(trpc.meetings.getMany.queryOptions());
@@ -144,6 +148,11 @@ export default function Meetings() {
         }
     };
 
+    const onStart = (id) => {
+        router.push(`/call/${id}`);
+    };
+
+
     if (!meetings) return <StateLoader title="Fetching meetings..." description="Loading..." />;
 
     return (
@@ -196,13 +205,29 @@ export default function Meetings() {
                 )}
             </section>
 
-            <MeetingDrawer
+
+            <StateDrawer
                 open={drawerOpen}
                 meeting={viewMeeting}
                 onClose={() => setDrawerOpen(false)}
                 onEdit={openEdit}
                 onDelete={handleDelete}
+                onStart={onStart}
+                onCancelMeeting={() => { }}
+                onJoin={() => { }}
+                onDownloadTranscript={() => { }}
+                onViewRecording={() => { }}
+
             />
+
+
+            {/* <MeetingDrawer
+                open={drawerOpen}
+                meeting={viewMeeting}
+                onClose={() => setDrawerOpen(false)}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+            /> */}
 
 
             {/* Create / Edit dialog */}

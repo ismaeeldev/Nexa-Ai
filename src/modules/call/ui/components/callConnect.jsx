@@ -9,12 +9,13 @@ import {
 } from "@stream-io/video-react-sdk"
 import { useTRPC } from "@/trpc/client"
 
-import "@stream-io/video-react-sdk/dist/css / styles.css"
+import "@stream-io/video-react-sdk/dist/css/styles.css"
 import { useMutation } from "@tanstack/react-query"
 import NexaLoader from "../../../Loader/NexaLoader"
+import CallUi from "./callUi"
 
 
-const CallConnect = ({ meetingId, userId, userName, userImage }) => {
+const CallConnect = ({ meetingId, meetingName, userId, userName, userImage }) => {
 
     const trpc = useTRPC();
 
@@ -73,14 +74,7 @@ const CallConnect = ({ meetingId, userId, userName, userImage }) => {
     return (
         <StreamVideo client={client}>
             <StreamCall call={call}>
-                {/* You can use their prebuilt UI components */}
-                <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-                    <h2>Meeting: {meetingId}</h2>
-                    <p>Welcome, {userName}</p>
-                    {/* Add video layout */}
-                    <call.Video />
-                    <call.ParticipantList />
-                </div>
+                <CallUi meetingName={meetingName} />
             </StreamCall>
         </StreamVideo>
     )

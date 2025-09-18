@@ -21,8 +21,8 @@ const CallConnect = ({ meetingId, meetingName, userId, userName, userImage }) =>
 
     const { mutateAsync: generateToken } = useMutation(trpc.meetings.generateToken.mutationOptions())
 
-    const [client, setClient] = useState < StreamVideoClient | null > (null)
-    const [call, setCall] = useState < Call | null > (null)
+    const [client, setClient] = useState(null)
+    const [call, setCall] = useState(null)
 
     useEffect(() => {
 
@@ -58,7 +58,7 @@ const CallConnect = ({ meetingId, meetingName, userId, userName, userImage }) =>
 
         return () => {
 
-            if (videoCall.state.CallingState !== CallingState.LEFT) {
+            if (videoCall.state.callingState !== CallingState.LEFT) {
                 videoCall.leave();
                 videoCall.endCall();
                 setCall(undefined);

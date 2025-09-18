@@ -28,7 +28,13 @@ const CallUi = ({ meetingName }) => {
     }
 
     return (
-        <StreamTheme className="h-screen bg-background text-foreground">
+        <StreamTheme themeOverrides={{
+            colors: {
+                static_white: "oklch(0.985 0 0)",
+                static_black: "oklch(0.145 0 0)",
+                primary: "var(--primary)",
+            }
+        }} className="h-screen bg-background text-foreground">
             {show === "lobby" && <CallLobby onJoin={handleJoin} />}
             {show === "call" && (
                 <CallActive onLeave={handleLeave} meetingName={meetingName} />

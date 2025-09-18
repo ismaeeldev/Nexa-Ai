@@ -48,6 +48,7 @@ const CallLobby = ({ onJoin }) => {
                         )
                         : AllowBrowserPermission
                 }
+                className="rounded-xl border bg-background/60 backdrop-blur"
             />
             <div className='flex gap-2'>
                 <ToggleAudioPreviewButton />

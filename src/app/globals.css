@@ -167,3 +167,53 @@
     cursor: pointer;
   }
 }
+
+/* Stream Video overrides to match Nexa theme */
+@layer components {
+  /* Root container */
+  .str-video,
+  .dark .str-video {
+    background-color: var(--background) !important;
+    color: var(--foreground) !important;
+  }
+
+  /* Controls bar */
+  .str-video__call-controls,
+  .dark .str-video__call-controls {
+    background-color: color-mix(in oklab, var(--background), black 6%) !important;
+    border-top: 1px solid var(--border) !important;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Generic buttons */
+  .str-video button,
+  .str-video [role="button"] {
+    border: 1px solid var(--border);
+    background-color: color-mix(in oklab, var(--background), white 2%);
+    color: var(--foreground);
+  }
+  .str-video button:hover,
+  .str-video [role="button"]:hover {
+    background-color: color-mix(in oklab, var(--background), white 6%);
+  }
+
+  /* Primary/destructive accents */
+  .str-video .str-video__button--primary {
+    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+    color: var(--primary-foreground);
+    border: none;
+  }
+  .str-video .str-video__button--danger,
+  .str-video .str-video__button--destructive {
+    background: oklch(0.62 0.24 16.89);
+    color: oklch(0.985 0 0);
+    border: none;
+  }
+
+  /* Tiles background */
+  .str-video__participant-tile,
+  .str-video__video-placeholder {
+    background-color: color-mix(in oklab, var(--background), white 4%);
+    border: 1px solid var(--border);
+  }
+}

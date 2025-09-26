@@ -8,7 +8,7 @@ import CallEnded from './callEnded'
 
 const CallUi = ({ meetingName }) => {
     const call = useCall();
-    const [show, setShow] = useState("lobby"); // "lobby" | "call" | "ended"
+    const [show, setShow] = useState("lobby");
 
 
     const handleJoin = async () => {

@@ -158,6 +158,9 @@
   .custom-input:focus {
     @apply border-blue-500 outline-none ring-0;
   }
+
+ 
+
 }
 
 @layer base {
@@ -170,6 +173,7 @@
 
 /* Stream Video overrides to match Nexa theme */
 @layer components {
+
   /* Root container */
   .str-video,
   .dark .str-video {
@@ -192,6 +196,7 @@
     background-color: color-mix(in oklab, var(--background), white 2%);
     color: var(--foreground);
   }
+
   .str-video button:hover,
   .str-video [role="button"]:hover {
     background-color: color-mix(in oklab, var(--background), white 6%);
@@ -203,6 +208,7 @@
     color: var(--primary-foreground);
     border: none;
   }
+
   .str-video .str-video__button--danger,
   .str-video .str-video__button--destructive {
     background: oklch(0.62 0.24 16.89);

@@ -151,6 +151,9 @@ export default function Meetings() {
     const onStart = (id) => {
         router.push(`/call/${id}`);
     };
+    const onJoin = (id) => {
+        router.push(`/call/${id}`);
+    };
 
 
     if (!meetings) return <StateLoader title="Fetching meetings..." description="Loading..." />;
@@ -214,20 +217,11 @@ export default function Meetings() {
                 onDelete={handleDelete}
                 onStart={onStart}
                 onCancelMeeting={() => { }}
-                onJoin={() => { }}
+                onJoin={onJoin}
                 onDownloadTranscript={() => { }}
                 onViewRecording={() => { }}
 
             />
-
-
-            {/* <MeetingDrawer
-                open={drawerOpen}
-                meeting={viewMeeting}
-                onClose={() => setDrawerOpen(false)}
-                onEdit={openEdit}
-                onDelete={handleDelete}
-            /> */}
 
 
             {/* Create / Edit dialog */}

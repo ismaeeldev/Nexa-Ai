@@ -6,7 +6,7 @@ import { MeetingSchema } from "../meetingSchema";
 import { z } from "zod";
 import { eq, getTableColumns, sql, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { streamVideo } from "@/lib/stream-video";
+import streamVideo from "@/lib/stream-video";
 import { generateAvatar } from "@/lib/avatar";
 
 const meetingRouter = createTRPCRouter({

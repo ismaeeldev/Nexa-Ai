@@ -80,6 +80,7 @@ export const meetings = pgTable("meetings", {
     status: meetingStatus("status").notNull().default("upcoming"),
     startedAt: timestamp("started_at"),
     endedAt: timestamp("ended_at"),
+    agentJoined: boolean("agent_joined").notNull().default(false),
     transcriptUrl: text("transcript_url"),
     recordingUrl: text("recording_url"),
     summary: text("summary"),

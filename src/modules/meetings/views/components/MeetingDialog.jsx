@@ -1,12 +1,10 @@
-// modules/Meetings/components/MeetingDialog.jsx
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { X, Calendar, Loader2 } from "lucide-react";
-import MeetingStatusSelect from "@/components/ui/meetingStatusSelect";
 import MeetingAgentSelect from "@/components/ui/meetingAgentSelect";
 
-/* Minimal theme constants (kept from your agent dialog) */
+/* Minimal theme constants */
 const DIALOG_STYLES = {
     container: {
         background:
@@ -22,66 +20,13 @@ const DIALOG_STYLES = {
 
 const INPUT_BASE =
     "w-full bg-transparent text-gray-100 placeholder-gray-500 outline-none text-sm py-3 px-3 border border-transparent rounded-md focus:border-[#6366F1]/30 focus:ring-0";
-const TEXTAREA_BASE = INPUT_BASE + " resize-y";
 
-/* small helpers */
-function toInputDatetime(iso) {
-    if (!iso) return "";
-    const dt = new Date(iso);
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(
-        dt.getHours()
-    )}:${pad(dt.getMinutes())}`;
-}
-
-/* keyboard shortcuts: Esc close, ⌘/Ctrl+S save */
-const useKeyboardShortcuts = (open, onClose, onSave) => {
-    useEffect(() => {
-        if (!open) return;
-        const handler = (e) => {
-            if (e.key === "Escape") {
-                e.preventDefault();
-                onClose();
-            }
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
-                e.preventDefault();
-                onSave();
-            }
-        };
-        window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, [open, onClose, onSave]);
-};
-
-/**
- * MeetingDialog
- * Props:
- *  - open: boolean
- *  - setOpen: (v:boolean) => void
- *  - meeting: object|null  (if null → create)
- *  - agents: [{id,name,avatarUrl?}, ...]
- *  - onSave: async (payload) => void   (payload contains agentId, name, status, startedAt, endedAt, summary, id?)
- */
-export default function MeetingDialog({
-    open,
-    setOpen,
-    meeting = null,
-    agents = [],
-    onSave,
-}) {
+export default function MeetingDialog({ open, setOpen, meeting = null, agents = [], onSave }) {
     const isEdit = Boolean(meeting && meeting.id);
     const inputRef = useRef(null);
 
     // form state
     const [name, setName] = useState(meeting?.name ?? "");
-    const [status, setStatus] = useState(meeting?.status ?? "upcoming");
-    const [startedAt, setStartedAt] = useState(
-        meeting?.startedAt ? toInputDatetime(meeting.startedAt) : ""
-    );
-    const [endedAt, setEndedAt] = useState(
-        meeting?.endedAt ? toInputDatetime(meeting.endedAt) : ""
-    );
-    const [summary, setSummary] = useState(meeting?.summary ?? "");
     const [selectedAgentId, setSelectedAgentId] = useState(
         meeting?.agent?.id ?? meeting?.agentId ?? (agents[0]?.id ?? null)
     );
@@ -91,10 +36,6 @@ export default function MeetingDialog({
     useEffect(() => {
         if (!open) return;
         setName(meeting?.name ?? "");
-        setStatus(meeting?.status ?? "upcoming");
-        setStartedAt(meeting?.startedAt ? toInputDatetime(meeting.startedAt) : "");
-        setEndedAt(meeting?.endedAt ? toInputDatetime(meeting.endedAt) : "");
-        setSummary(meeting?.summary ?? "");
         setSelectedAgentId(meeting?.agent?.id ?? meeting?.agentId ?? agents[0]?.id ?? null);
 
         const t = setTimeout(() => inputRef.current?.focus?.(), 60);
@@ -110,11 +51,7 @@ export default function MeetingDialog({
         const payload = {
             id: meeting?.id,
             name: name.trim(),
-            status,
             agentId: selectedAgentId ?? null,
-            startedAt: startedAt ? new Date(startedAt).toISOString() : null,
-            endedAt: endedAt ? new Date(endedAt).toISOString() : null,
-            summary: summary?.trim() || null,
         };
 
         try {
@@ -127,8 +64,6 @@ export default function MeetingDialog({
             console.error("Meeting save failed", err);
         }
     };
-
-    useKeyboardShortcuts(open, close, handleSave);
 
     if (!open) return null;
 
@@ -189,9 +124,9 @@ export default function MeetingDialog({
 
                     {/* Content */}
                     <div className="p-4 md:p-6">
-                        {/* Title + status + agent row */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-1">
+                        {/* Title + agent row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
                                 <label className="block text-xs text-gray-400 mb-1">Title</label>
                                 <input
                                     ref={inputRef}
@@ -203,55 +138,12 @@ export default function MeetingDialog({
                             </div>
 
                             <div>
-                                <label className="block text-xs text-gray-400 mb-1">Status</label>
-                                <MeetingStatusSelect value={status} onChange={setStatus} />
-                            </div>
-
-                            <div>
                                 <label className="block text-xs text-gray-400 mb-1">Agent</label>
                                 <MeetingAgentSelect
                                     agents={agents}
                                     value={selectedAgentId}
                                     onChange={setSelectedAgentId}
                                 />
-                            </div>
-                        </div>
-
-                        {/* Start / End */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="text-sm text-gray-300 block mb-1">Start</label>
-                                <input
-                                    type="datetime-local"
-                                    className={INPUT_BASE}
-                                    value={startedAt}
-                                    onChange={(e) => setStartedAt(e.target.value)}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-sm text-gray-300 block mb-1">End</label>
-                                <input
-                                    type="datetime-local"
-                                    className={INPUT_BASE}
-                                    value={endedAt}
-                                    onChange={(e) => setEndedAt(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Summary */}
-                        <div className="mt-4">
-                            <label className="block text-xs text-gray-400 mb-1">Summary (optional)</label>
-                            <textarea
-                                rows={4}
-                                className={TEXTAREA_BASE}
-                                placeholder="Short summary or notes…"
-                                value={summary}
-                                onChange={(e) => setSummary(e.target.value)}
-                            />
-                            <div className="mt-1 text-[11px] text-gray-500">
-                                Tip: a short summary helps the team quickly understand outcomes.
                             </div>
                         </div>
 
@@ -276,7 +168,7 @@ export default function MeetingDialog({
                                 }}
                             >
                                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                                {isEdit ? "Update" : "Create"} {isEdit ? "" : "(⌘/Ctrl+S)"}
+                                {isEdit ? "Update" : "Create"}
                             </button>
                         </div>
                     </div>

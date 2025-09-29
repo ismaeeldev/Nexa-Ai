@@ -96,9 +96,7 @@ const MeetingRow = ({ meeting, onView, onEdit, onDelete }) => {
                 </span>
             </td>
 
-            <td className="px-6 py-4 align-middle text-gray-300">{formatDateTime(meeting.startedAt)}</td>
 
-            <td className="px-6 py-4 align-middle text-gray-300">{formatDateTime(meeting.endedAt)}</td>
 
             <td className="px-6 py-4 align-middle">
                 <div className="flex items-center gap-2 justify-end">
@@ -190,13 +188,11 @@ export default function MeetingTable({ meetings = [], pageSize = 9, onEdit = () 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="text-left text-gray-300 ">
-                                <tr className="border-b border-white/5 text-center ">
-                                    <th className="px-6 py-4 font-medium">Meeting</th>
-                                    <th className="px-6 py-4 font-medium">Agent</th>
-                                    <th className="px-6 py-4 font-medium">Status</th>
-                                    <th className="px-6 py-4 font-medium">Started</th>
-                                    <th className="px-6 py-4 font-medium">Ended</th>
-                                    <th className="px-6 py-4 font-medium text-center w-48">Actions</th>
+                                <tr className="border-b border-white/5  ">
+                                    <th className=" px-16 py-4 font-medium ">Meeting</th>
+                                    <th className=" px-16 py-4 font-medium ">Agent</th>
+                                    <th className=" px-12 py-4 font-medium ">Status</th>
+                                    <th className="py-4 font-medium text-center w-48">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
